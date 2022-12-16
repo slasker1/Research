@@ -1,7 +1,8 @@
-import seaborn as sns, pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, Selection
+import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt
 from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
+from Selection import Selection
 
 def analyze(total_hist):
     d=date.today()
@@ -56,7 +57,7 @@ def analyze(total_hist):
     r2_table = r2_table.rename(columns=dict_cols)
     r2_table = r2_table.sort_values(by='Avg Alpha-Factor', ascending=False)
 
-    vola_table = hist_for_corr.apply(inv_vola_calc)
+    vola_table = hist_for_corr.apply(vola_calc)
 
     r2_table['1-Month Vol'] = vola_table
     r2_table.to_csv("r2_table_Comm.csv")
@@ -68,129 +69,18 @@ def analyze(total_hist):
 
     return r2_table
 
-# rows = 5
-# cols = 6
-
-# def Bolinger_Bands(stock_price, window_size, num_of_std):
-#
-#     rolling_mean = stock_price.rolling(window=window_size).mean()
-#     rolling_std  = stock_price.rolling(window=window_size).std()
-#     upper_band = rolling_mean + (rolling_std*num_of_std)
-#     lower_band = rolling_mean - (rolling_std*num_of_std)
-#
-#     return rolling_mean, upper_band, lower_band
-#
-# fig = plt.figure()
-# n=1
-#
-# df = hist_for_corr
-#
-# for tick in tickers_list:
-#     share_price = df[tick]
-#     #share_price = share_price.ffill()
-#
-#     #print(share_price)
-#
-#     rolling_mean, upper_band, lower_band = Bolinger_Bands(share_price, 20, 2)
-#
-#     rolling_mean = rolling_mean.dropna()
-#     upper_band = upper_band.dropna()
-#     lower_band = lower_band.dropna()
-#
-#     #print(rolling_mean)
-#     #print(upper_band)
-#     #rolling_mean2, upper_band2, lower_band2 = Bolinger_Bands(share_price, 20, 1.75)
-#
-#     #sell_price = round(upper_band[-1], 4)
-#
-#     #buy_price = round(rolling_mean[-1], 4)
-#
-#     #current_price = round(share_price[-1], 4)
-#
-#     sell_price = upper_band.iat[-1]
-#
-#     buy_price = rolling_mean.iat[-1]
-#
-#     current_price = share_price.iat[-1]
-#
-#     print("$" + str(sell_price))
-#
-#     #print("Sell @$" + str(sell_price) + " Buy back @$" + str(buy_price) +
-#     #     "! \nCurrent Price @$" + str(current_price))
-#
-#     if current_price > buy_price and current_price < sell_price:
-#         #https://matplotlib.org/3.1.1/tutorials/colors/colors.html XKCD COLORS
-#         plot = fig.add_subplot(rows, cols, n).patch.set_facecolor('xkcd:mint green')
-#         plt.title(str(tick) + ' Share Price')
-#         plt.plot(upper_band[-14:])
-#         plt.plot(lower_band[-14:])
-#         #plt.plot(upper_band2[-14:])
-#         #plt.plot(lower_band2[-14:])
-#         plt.plot(share_price[-14:])
-#         plt.plot(rolling_mean[-14:])
-#         #plt.xlabel('Day')
-#         #plt.ylabel(str(tick) + ' Share Price')
-#         plt.rcParams["date.autoformatter.day"] = "%Y-%m-%d"
-#         plt.setp(plt.xticks()[1], rotation=40, ha='right')
-#
-#     elif current_price > sell_price:
-#         plot = fig.add_subplot(rows, cols, n).patch.set_facecolor('xkcd:yellow')
-#         plt.title(str(tick) + ' Share Price')
-#         plt.plot(upper_band[-14:])
-#         plt.plot(lower_band[-14:])
-#         #plt.plot(upper_band2[-14:])
-#         #plt.plot(lower_band2[-14:])
-#         plt.plot(share_price[-14:])
-#         plt.plot(rolling_mean[-14:])
-#         #plt.xlabel('Day')
-#         #plt.ylabel(str(tick) + ' Share Price')
-#         plt.rcParams["date.autoformatter.day"] = "%Y-%m-%d"
-#         plt.setp(plt.xticks()[1], rotation=40, ha='right')
-#
-#     elif current_price < buy_price:
-#         plot = fig.add_subplot(rows, cols, n).patch.set_facecolor('xkcd:pale blue')
-#         plt.title(str(tick) + ' Share Price')
-#         plt.plot(upper_band[-14:])
-#         plt.plot(lower_band[-14:])
-#         #plt.plot(upper_band2[-14:])
-#        # plt.plot(lower_band2[-14:])
-#         plt.plot(share_price[-14:])
-#         plt.plot(rolling_mean[-14:])
-#         #plt.xlabel('Day')
-#         #plt.ylabel(str(tick) + ' Share Price')
-#         plt.rcParams["date.autoformatter.day"] = "%Y-%m-%d"
-#         plt.setp(plt.xticks()[1], rotation=40, ha='right')
-#
-#     n = n+1
-#
-# fig.subplots_adjust(hspace=.7, wspace=.2)
-# plt.show()
-
-
 if __name__ == '__main__':
+
     dfSectors = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
     tickers_list = dfSectors["Symbol"].values.tolist()
-    total_hist = yf.download(tickers=tickers_list, period="1y",
+
+    comm_research = Selection('Commodities', 'Momentum', tickers_list)
+
+    Selection.displaySelection(comm_research)
+
+    total_hist = yf.download(tickers=comm_research.universe, period="1y",
                             interval="1d", group_by='ticker',
                             auto_adjust=True, prepost=True,
                             threads=True, proxy=None)
 
-    import Selection
-
-    comm_research = Selection('Commodities', tickers_list, 'Momentum')
-
-    Selection.displaySelection()
-
     r2_table = analyze(total_hist)
-
-
-
-    #
-    # plt.figure(figsize=(25, 20))
-    # print(returns_df)
-    # sns.heatmap(returns_df.corr(), cmap='Spectral_r', linewidths=1, annot=True, fmt='.2f')
-    # plt.show()
-    #
-    # plt.figure(figsize=(25, 15))
-    # sns.heatmap(ranking_table.corr(), cmap='Spectral_r', linewidths=1, annot=True, fmt='.2f')
-    # plt.show()

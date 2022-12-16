@@ -7,14 +7,14 @@ class Selection:
       self.a_factor = a_factor
       self.universe = universe
    def displaySelection(self):
-      print("Name : ", self.name, ", Alpha Factor: ", self.a_factor, ", Universe: ", self.universe)
+      print("Name: ", self.name, "\nAlpha Factor: ", self.a_factor, "\nUniverse: ", self.universe)
 
 class Alpha_Factor:
    'Common base class for all macro research'
    def __init__(self, name, a_factor, universe):
-      self.name = name
-      self.a_factor = a_factor
-      self.universe = universe
+      self.minimum_momentum = name
+      self.number_of_stocks = a_factor
+      self.exclude_days = universe
 
    # calculate R^2
    def slope(ts):
@@ -33,7 +33,7 @@ class Alpha_Factor:
       return minimum_momentum, number_of_stocks, exclude_days
 
    def build_mom_list(momentum_window, tickers_list, total_hist):
-      minimum_momentum, number_of_stocks, exclude_days = get_params()
+      minimum_momentum, number_of_stocks, exclude_days = self.minimum_momentum, self.number_of_stocks, self.exclude_days
 
       hist = pd.DataFrame(columns=tickers_list)
 
