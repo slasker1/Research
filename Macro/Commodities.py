@@ -10,8 +10,8 @@ def vola_calc(ts):
     return ts.pct_change().rolling(vola_window).std().dropna().iloc[-1]
 
 def analyze():
-    dfSectors = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
-    tickers_list = dfSectors["Symbol"].values.tolist()
+    universe = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
+    tickers_list = universe["Symbol"].values.tolist()
 
     comm_research = Initialize('Commodities', 'Momentum', tickers_list)
 
@@ -21,8 +21,6 @@ def analyze():
                              interval="1d", group_by='ticker',
                              auto_adjust=True, prepost=True,
                              threads=True, proxy=None)
-
-    print(Initialize.returnAlpha(comm_research, 20, total_hist))
 
     d=date.today()
     idx = pd.IndexSlice
