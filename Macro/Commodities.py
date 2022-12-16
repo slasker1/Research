@@ -2,7 +2,7 @@ import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt
 from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
-from Selection import Selection, Alpha_Factor
+from Initialize import Initialize
 
 def analyze(total_hist):
     d=date.today()
@@ -78,11 +78,11 @@ if __name__ == '__main__':
 
     Selection.displaySelection(comm_research)
 
-    comm_momentum = Alpha_Factor('')
-
     total_hist = yf.download(tickers=comm_research.universe, period="1y",
                             interval="1d", group_by='ticker',
                             auto_adjust=True, prepost=True,
                             threads=True, proxy=None)
+
+    print(Selection.returnAlpha(comm_research, 20, total_hist))
 
     r2_table = analyze(total_hist)
