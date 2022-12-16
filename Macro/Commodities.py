@@ -3,8 +3,27 @@ from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
 from Initialize import Initialize
+import tabulate
 
-def analyze(total_hist):
+def vola_calc(ts):
+    vola_window = 20
+    return ts.pct_change().rolling(vola_window).std().dropna().iloc[-1]
+
+def analyze():
+    dfSectors = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
+    tickers_list = dfSectors["Symbol"].values.tolist()
+
+    comm_research = Initialize('Commodities', 'Momentum', tickers_list)
+
+    Initialize.displaySelection(comm_research)
+
+    total_hist = yf.download(tickers=comm_research.universe, period="1y",
+                             interval="1d", group_by='ticker',
+                             auto_adjust=True, prepost=True,
+                             threads=True, proxy=None)
+
+    print(Initialize.returnAlpha(comm_research, 20, total_hist))
+
     d=date.today()
     idx = pd.IndexSlice
     year_start = total_hist.loc['2021-12-31',idx[:,'Close']]
@@ -43,7 +62,7 @@ def analyze(total_hist):
     r2_table = pd.DataFrame(columns=time_list, index=tickers_list).sort_index()
 
     for time in time_list:
-        ranking_t, hist_for_corr = build_mom_list(time, tickers_list, total_hist)
+        ranking_t, hist_for_corr = Initialize.returnAlpha(comm_research, time, total_hist)
 
         r2_ranks = pd.DataFrame(ranking_t).sort_index()
         r2_table[time] = r2_ranks[0] / (125 / time)
@@ -70,19 +89,5 @@ def analyze(total_hist):
     return r2_table
 
 if __name__ == '__main__':
-
-    dfSectors = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
-    tickers_list = dfSectors["Symbol"].values.tolist()
-
-    comm_research = Selection('Commodities', 'Momentum', tickers_list)
-
-    Selection.displaySelection(comm_research)
-
-    total_hist = yf.download(tickers=comm_research.universe, period="1y",
-                            interval="1d", group_by='ticker',
-                            auto_adjust=True, prepost=True,
-                            threads=True, proxy=None)
-
-    print(Selection.returnAlpha(comm_research, 20, total_hist))
-
-    r2_table = analyze(total_hist)
+    r2_table = analyze()
+    print(tabulate.tabulate(r2_table, headers=r2_table.columns))

@@ -1,7 +1,7 @@
 import numpy as np, pandas as pd
 from scipy import stats
 
-class Selection:
+class Initialize:
    #Research topic selection
    def __init__(self, name, a_factor, universe):
       self.name = name
@@ -11,7 +11,7 @@ class Selection:
       print("Name: ", self.name, "\nAlpha Factor: ", self.a_factor, "\nUniverse: ", self.universe)
 
    def returnAlpha(self, momentum_window, total_hist):
-      if self.name == 'Momentum':
+      if self.a_factor == 'Momentum':
          return self.build_mom_list(momentum_window, self.universe, total_hist)
 
    def slope(self, ts):
