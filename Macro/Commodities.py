@@ -1,52 +1,8 @@
-import seaborn as sns, pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt
+import seaborn as sns, pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, Selection
 from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
 
-#calculate R^2
-def slope(ts):
-    x = np.arange(len(ts))
-    log_ts = np.log(ts)
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x, log_ts)
-    annualized_slope = (np.power(np.exp(slope), 252) - 1) * 100
-    score = annualized_slope * (r_value ** 2)
-    return score
-
-#Inverse Volatility Weight portfolio consturction
-def inv_vola_calc(ts):
-    vola_window = 20
-    return ts.pct_change().rolling(vola_window).std().dropna().iloc[-1]
-
-#Setting Params for Momentum
-def get_params():
-    minimum_momentum = 0  # momentum score cap
-    number_of_stocks = 27
-    exclude_days = 0
-    return minimum_momentum, number_of_stocks, exclude_days
-def build_mom_list(momentum_window, tickers_list, total_hist):
-    minimum_momentum, number_of_stocks, exclude_days = get_params()
-
-    hist = pd.DataFrame(columns=tickers_list)
-
-    hist_window = momentum_window + exclude_days
-    for ticker in tickers_list:
-        ticker = str(ticker)
-        hist[ticker] = total_hist[ticker]["Close"].tail(hist_window)
-        # volume[ticker] = total_hist[ticker]["Volume"].tail(200+2)[:-2]
-
-    data_end = -1 * (exclude_days + 1)  # exclude most recent data
-
-    hist = hist.dropna()
-
-    momentum1_start = -1 * (momentum_window + exclude_days)
-    momentum_hist1 = hist[momentum1_start:data_end]
-
-    momentum_list = momentum_hist1.apply(slope)  # Mom Window 1
-
-    ranking_table = momentum_list.sort_values(ascending=False)
-
-    ranking_table.to_csv("sector_ranking_table.csv")
-    return ranking_table, hist
 def analyze(total_hist):
     d=date.today()
     idx = pd.IndexSlice
@@ -218,6 +174,12 @@ if __name__ == '__main__':
                             interval="1d", group_by='ticker',
                             auto_adjust=True, prepost=True,
                             threads=True, proxy=None)
+
+    import Selection
+
+    comm_research = Selection('Commodities', tickers_list, 'Momentum')
+
+    Selection.displaySelection()
 
     r2_table = analyze(total_hist)
 
