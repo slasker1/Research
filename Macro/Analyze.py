@@ -127,7 +127,11 @@ if __name__ == '__main__':
 
     r2_table.reset_index().set_index('index', drop=False)
 
+    app = Dash(__name__)
+
     app.layout = dash_table.DataTable(
-        data=df.to_dict('records'),
-        columns=[{'id': c, 'name': c} for c in df.columns],
+        data=r2_table.to_dict('records'),
+        columns=[{'id': c, 'name': c} for c in r2_table.columns],
     )
+
+    app.run_server(debug=True)
