@@ -1,10 +1,9 @@
-import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, tabulate
+import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, tabulate, dash
 from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
 from Initialize import Initialize
-from dash import Dash, dash_table
-
+from flask import Flask
 
 break_str = '#' * 100
 
@@ -125,13 +124,17 @@ if __name__ == '__main__':
     r2_table = analyze(selection)
     print(tabulate.tabulate(r2_table, headers=r2_table.columns))
 
-    r2_table.reset_index().set_index('index', drop=False)
+    app = dash.Dash(
+        __name__,
+        server=Flask(__name__),
+        routes_pathname_prefix='/dash/')
 
-    app = Dash(__name__)
-
-    app.layout = dash_table.DataTable(
+    app.layout = dash.dash_table.DataTable(
+        id="table",
         data=r2_table.to_dict('records'),
         columns=[{'id': c, 'name': c} for c in r2_table.columns],
+        page_action='none',
+        style_table={'height': '300px', 'overflowY': 'auto'}
     )
 
-    app.run_server(debug=True)
+    app.run_server(debug='True')
