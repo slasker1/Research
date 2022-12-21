@@ -5,19 +5,14 @@ from datetime import date
 from Initialize import Initialize
 import tabulate
 
+break_str = '#' * 100
+
 def vola_calc(ts):
     vola_window = 20
     return ts.pct_change().rolling(vola_window).std().dropna().iloc[-1]
 
-def analyze():
-    universe = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
-    tickers_list = universe["Symbol"].values.tolist()
-
-    comm_research = Initialize('Commodities', 'Momentum', tickers_list)
-
-    Initialize.displaySelection(comm_research)
-
-    total_hist = yf.download(tickers=comm_research.universe, period="1y",
+def analyze(selection):
+    total_hist = yf.download(tickers=selection.ticker_list, period="1y",
                              interval="1d", group_by='ticker',
                              auto_adjust=True, prepost=True,
                              threads=True, proxy=None)
@@ -57,17 +52,17 @@ def analyze():
                  '125-corr': '6-Months Corr'}
 
     time_list = [20, 60, 125]
-    r2_table = pd.DataFrame(columns=time_list, index=tickers_list).sort_index()
+    r2_table = pd.DataFrame(columns=time_list, index=selection.ticker_list).sort_index()
 
     for time in time_list:
-        ranking_t, hist_for_corr = Initialize.returnAlpha(comm_research, time, total_hist)
+        ranking_t, hist_for_corr = Initialize.returnAlpha(selection, time, total_hist)
 
         r2_ranks = pd.DataFrame(ranking_t).sort_index()
         r2_table[time] = r2_ranks[0] / (125 / time)
 
         r2_table[str(time) + '-corr'] = np.nan
 
-        for tick in tickers_list:
+        for tick in selection.ticker_list:
             r2_table.loc[tick, str(time) + '-corr'] = hist_for_corr.corr()[tick].drop(tick).mean()
 
     r2_table.insert(3, 'Avg Alpha-Factor', r2_table[time_list].mean(axis=1))
@@ -87,5 +82,44 @@ def analyze():
     return r2_table
 
 if __name__ == '__main__':
-    r2_table = analyze()
+    print(break_str)
+    print('Welcome User! To begin your analysis please follow the input instructions:\n')
+    print('Please select a universe to research:\n' +
+          '1: World ETFs\n'+'2: US Sector ETFs\n'+'3: Commodity ETFs\n')
+
+    universe = input('Select your universe: ')
+
+    print('\nPlease select an alpha factor to research:\n' +
+          '1: Momentum\n')
+
+    a_factor = input('Select your alpha factor: ')
+
+    #default universe selected = 1 , World
+    universe_selected = 'World'
+    if universe == 1:
+        universe_selected = 'World'
+    elif universe == 2:
+        universe_selected = 'US'
+    elif universe == 3:
+        universe_selected = 'Commodities'
+    else:
+        'User returned the wrong input value! Defaulting to World ETFs selection...'
+
+    # default universe selected = 1 , World
+    a_factor_selected = 'Momentum'
+    if a_factor == 1:
+        a_factor_selected = 'Momentum'
+    else:
+        'User returned the wrong input value! Defaulting to Momentum selection...'
+
+
+
+    selection = Initialize(universe_selected, 'Momentum')
+
+    print('\n' + break_str + '\nDisplaying your research selections: ')
+    Initialize.displaySelection(selection)
+
+    print(selection.ticker_list)
+
+    r2_table = analyze(selection)
     print(tabulate.tabulate(r2_table, headers=r2_table.columns))
