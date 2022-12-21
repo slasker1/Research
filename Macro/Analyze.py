@@ -123,3 +123,7 @@ if __name__ == '__main__':
 
     r2_table = analyze(selection)
     print(tabulate.tabulate(r2_table, headers=r2_table.columns))
+
+    ax = r2_table.plot(x="X", y=["Avg Alpha-Factor"], kind="bar", rot=0)
+
+    plt.show()
