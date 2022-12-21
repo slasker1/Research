@@ -1,9 +1,10 @@
-import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt
+import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, tabulate
 from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
 from Initialize import Initialize
-import tabulate
+from dash import Dash, dash_table
+
 
 break_str = '#' * 100
 
@@ -124,6 +125,9 @@ if __name__ == '__main__':
     r2_table = analyze(selection)
     print(tabulate.tabulate(r2_table, headers=r2_table.columns))
 
-    ax = r2_table.plot(x="X", y=["Avg Alpha-Factor"], kind="bar", rot=0)
+    r2_table.reset_index().set_index('index', drop=False)
 
-    plt.show()
+    app.layout = dash_table.DataTable(
+        data=df.to_dict('records'),
+        columns=[{'id': c, 'name': c} for c in df.columns],
+    )
