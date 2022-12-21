@@ -1,9 +1,8 @@
-import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, tabulate, dash
+import pandas as pd, numpy as np, yfinance as yf, matplotlib.pyplot as plt, tabulate
 from scipy import stats
 from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
 from Initialize import Initialize
-from flask import Flask
 
 break_str = '#' * 100
 
@@ -42,7 +41,7 @@ def analyze(selection):
 
     returns_df = returns_df.droplevel(level=1).sort_values(by = 'YTD Return %', ascending = False)
 
-    returns_df.to_csv("returns_df_Comm.csv")
+    #returns_df.to_csv("returns_df_Comm.csv")
 
     dict_cols = {20: '1-Month',
                  60: '3-Months',
@@ -72,7 +71,7 @@ def analyze(selection):
     vola_table = hist_for_corr.apply(vola_calc)
 
     r2_table['1-Month Vol'] = vola_table
-    r2_table.to_csv("r2_table_Comm.csv")
+    #r2_table.to_csv("r2_table_Comm.csv")
 
     pd.set_option('display.max_columns', 1000000)
     pd.set_option('display.max_rows', 1000000)
@@ -123,18 +122,3 @@ if __name__ == '__main__':
 
     r2_table = analyze(selection)
     print(tabulate.tabulate(r2_table, headers=r2_table.columns))
-
-    app = dash.Dash(
-        __name__,
-        server=Flask(__name__),
-        routes_pathname_prefix='/dash/')
-
-    app.layout = dash.dash_table.DataTable(
-        id="table",
-        data=r2_table.to_dict('records'),
-        columns=[{'id': c, 'name': c} for c in r2_table.columns],
-        page_action='none',
-        style_table={'height': '300px', 'overflowY': 'auto'}
-    )
-
-    app.run_server(debug='True')
