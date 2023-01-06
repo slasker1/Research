@@ -17,6 +17,7 @@ class Initialize:
          return None
 
    def returnUniverse(self):
+      print(self.universe)
       if self.universe == 'Commodities':
          universe = pd.read_excel("Comm_Universe.xlsx", engine='openpyxl')
          tickers_list = universe["Symbol"].values.tolist()

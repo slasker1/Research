@@ -4,14 +4,14 @@ from pandas.tseries.offsets import BMonthEnd, BusinessDay
 from datetime import date
 from Initialize import Initialize
 
-break_str = '#' * 100
+break_str = '-' * 100
 
 def vola_calc(ts):
     vola_window = 20
     return ts.pct_change().rolling(vola_window).std().dropna().iloc[-1]
 
 def analyze(selection):
-    total_hist = yf.download(tickers=selection.ticker_list, period="1y",
+    total_hist = yf.download(tickers=selection.ticker_list, period="2y",
                              interval="1d", group_by='ticker',
                              auto_adjust=True, prepost=True,
                              threads=True, proxy=None)
@@ -20,7 +20,7 @@ def analyze(selection):
     idx = pd.IndexSlice
     year_start = total_hist.loc['2021-12-31',idx[:,'Close']]
 
-    offset = BusinessDay(n=0)
+    offset = BusinessDay(n=1)
     curr_bd = (d - offset).strftime('%Y-%m-%d')
     current = total_hist.loc[curr_bd,idx[:,'Close']]
 
@@ -84,17 +84,17 @@ if __name__ == '__main__':
     print(break_str)
     print('Welcome User! To begin your analysis please follow the input instructions:\n')
     print('Please select a universe to research:\n' +
-          '1: World ETFs\n'+'2: US Sector ETFs\n'+'3: Commodity ETFs\n')
+          '(1) World ETFs\n'+'(2) US Sector ETFs\n'+'(3) Commodity ETFs\n')
 
-    universe = input('Select your universe: ')
+    universe = int(input('Select your universe: '))
+    print(universe)
 
     print('\nPlease select an alpha factor to research:\n' +
-          '1: Momentum\n')
+          '(1) Momentum\n')
 
-    a_factor = input('Select your alpha factor: ')
+    a_factor = int(input('Select your alpha factor: '))
 
     #default universe selected = 1 , World
-    universe_selected = 'World'
     if universe == 1:
         universe_selected = 'World'
     elif universe == 2:
@@ -103,15 +103,14 @@ if __name__ == '__main__':
         universe_selected = 'Commodities'
     else:
         'User returned the wrong input value! Defaulting to World ETFs selection...'
+        universe_selected = 'World'
 
     # default universe selected = 1 , World
-    a_factor_selected = 'Momentum'
     if a_factor == 1:
         a_factor_selected = 'Momentum'
     else:
         'User returned the wrong input value! Defaulting to Momentum selection...'
-
-
+        a_factor_selected = 'Momentum'
 
     selection = Initialize(universe_selected, 'Momentum')
 
