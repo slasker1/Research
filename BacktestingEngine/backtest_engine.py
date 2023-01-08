@@ -1,9 +1,11 @@
-import zipline, matplotlib.pyplot as plt, pyfolio as pf, pandas as pd, numpy as np, yfinance as yf, warnings, csv
+import zipline, matplotlib.pyplot as plt, pyfolio as pf, pandas as pd, numpy as np, yfinance as yf, warnings, csv, sys
 from zipline.api import order_target_percent, symbol, set_commission, set_slippage, schedule_function, date_rules, \
     time_rules, set_long_only, set_max_leverage
 from scipy import stats
 from zipline.finance.commission import PerDollar
 from zipline.finance.slippage import VolumeShareSlippage, FixedSlippage
+
+sys.path.append('../BrownianBridge')
 from bbridge import BB
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
